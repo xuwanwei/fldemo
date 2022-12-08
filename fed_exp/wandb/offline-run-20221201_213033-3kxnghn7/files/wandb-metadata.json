@@ -1,0 +1,268 @@
+{
+    "os": "Linux-4.19.0-22-amd64-x86_64-with-debian-10.13",
+    "python": "3.7.4",
+    "heartbeatAt": "2022-12-01T13:30:33.416452",
+    "startedAt": "2022-12-01T13:30:33.354708",
+    "docker": null,
+    "cuda": null,
+    "args": [
+        "--gpu",
+        "0",
+        "--dataset",
+        "fmnist",
+        "--model",
+        "cnn",
+        "--fed_name",
+        "Fed3",
+        "--client_num_in_total",
+        "100",
+        "--comm_round",
+        "2",
+        "--local_bs",
+        "128",
+        "--budget_per_round",
+        "300",
+        "--frequency_of_the_test",
+        "1",
+        "--seed",
+        "1104",
+        "--draw",
+        "False"
+    ],
+    "state": "running",
+    "program": "./main_fed.py",
+    "codePath": "fed_exp/main_fed.py",
+    "git": {
+        "remote": "https://github.com/xuwanwei/fldemo.git",
+        "commit": "252f8265484bd3bccd89bdeebee6d86b7c6ad9df"
+    },
+    "email": null,
+    "root": "/home/public/xww/Exp/fldemo",
+    "host": "debian",
+    "username": "public",
+    "executable": "/home/public/miniconda/envs/xpfedml/bin/python3",
+    "cpu_count": 20,
+    "cpu_count_logical": 40,
+    "cpu_freq": {
+        "current": 2438.6359500000003,
+        "min": 0.0,
+        "max": 0.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2170.137,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2276.605,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2478.219,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2465.98,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2497.743,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2701.451,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2695.23,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2378.674,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2890.642,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2412.905,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2408.102,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2466.513,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 1805.363,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2458.323,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2425.879,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2429.744,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2456.333,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2479.224,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2482.946,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2493.243,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2514.426,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2447.657,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2358.758,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2374.476,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2040.981,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2498.982,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2690.307,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2485.928,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2318.698,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2488.446,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2757.852,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2487.837,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2330.591,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2473.08,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2418.941,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2473.725,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2401.99,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2325.064,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2491.587,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2292.856,
+            "min": 0.0,
+            "max": 0.0
+        }
+    ],
+    "disk": {
+        "total": 915.6289367675781,
+        "used": 23.968639373779297
+    },
+    "gpu": "NVIDIA RTX A5000",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA RTX A5000",
+            "memory_total": 25757220864
+        }
+    ],
+    "memory": {
+        "total": 125.42280197143555
+    }
+}
