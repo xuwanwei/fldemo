@@ -9,10 +9,10 @@ IMG_PATH_PRE = "../OutputImage"
 
 in_filename = "fedopt-1104-INFO-2022-11-27-16-12"
 
-filename_3 = "fed3-20221205-2022-12-08-12-23-R"
-filename_avg = "fedavg-20221205-2022-12-08-12-20-R"
-filename_bf = "fedbf-20221205-2022-12-08-12-27-R"
-filename_opt = "fedopt-20221205-2022-12-08-12-29-R"
+filename_3 = "fed3-20220924-2022-12-13-20-16-C"
+filename_avg = "fedavg-20220924-2022-12-13-20-16-C"
+filename_bf = "fedbf-20220924-2022-12-13-20-17-C"
+filename_opt = "fedopt-20220924-2022-12-13-20-25-C"
 
 DATA_PATH_3 = "../../../OutputData/fed_3"
 DATA_PATH_OPT = "../../../OutputData/fed_opt"
@@ -109,7 +109,7 @@ def draw_accuracy(file_name=None):
     with open("{}/{}.csv".format(DATA_PATH_PRE, file_name), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
         for row in reader:
-            print("round:{}, acc:{}".format(row[0], row[1]))
+            # print("round:{}, acc:{}".format(row[0], row[1]))
             round_list.append(int(row[0]))
             acc_list.append(float(row[1]))
 
@@ -130,7 +130,7 @@ def draw_loss(file_name=None):
     with open("{}/{}.csv".format(DATA_PATH_PRE, file_name), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
         for row in reader:
-            print("round:{}, loss:{}".format(row[0], row[1]))
+            # print("round:{}, loss:{}".format(row[0], row[1]))
             round_list.append(int(row[0]))
             loss_list.append(float(row[2]))
 
@@ -152,7 +152,7 @@ def draw_time(file_name=None):
     with open("{}/{}.csv".format(DATA_PATH_PRE, file_name), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
         for row in reader:
-            print("round:{}, time:{}".format(row[0], row[1]))
+            # print("round:{}, time:{}".format(row[0], row[1]))
             round_list.append(int(row[0]))
             loss_list.append(float(row[3]))
 
@@ -165,7 +165,7 @@ def draw_time(file_name=None):
     plt.savefig("{}/{}-TIME.png".format(IMG_PATH_PRE, file_name))
 
 
-def _get_cmp_list(name="ACC"):
+def _get_cmp_list(name="ACC", nums=None, sample_freq=1):
     x_list = []
     y_list_1 = []
     y_list_2 = []
@@ -186,26 +186,46 @@ def _get_cmp_list(name="ACC"):
         idx = 6
     with open("{}/Fed3/{}.csv".format(DATA_PATH_PRE, filename_3), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
-        for row in reader:
+        for i, row in enumerate(reader):
+            if i % sample_freq != 0:
+                continue
+            if nums is not None and i >= nums:
+                break
             # print("round:{}, {}:{}".format(row[0], name, row[idx]))
             x_list.append(int(row[0]))
             y_list_1.append(float(row[idx]))
 
     with open("{}/FedOpt/{}.csv".format(DATA_PATH_PRE, filename_opt), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
-        for row in reader:
+        for i, row in enumerate(reader):
+            if i % sample_freq != 0:
+                continue
+            if nums is not None and i >= nums:
+                break
             # print("round:{}, {}:{}".format(row[0], name, row[idx]))
             y_list_2.append(float(row[idx]))
 
     with open("{}/FedBF/{}.csv".format(DATA_PATH_PRE, filename_bf), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
-        for row in reader:
+        i = 1
+        for i, row in enumerate(reader):
+            if i % sample_freq != 0:
+                continue
+            if nums is not None and i >= nums:
+                break
+            i += 1
             # print("round:{}, {}:{}".format(row[0], name, row[idx]))
             y_list_3.append(float(row[idx]))
 
     with open("{}/FedAvg/{}.csv".format(DATA_PATH_PRE, filename_avg), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
-        for row in reader:
+        i = 1
+        for i, row in enumerate(reader):
+            if i % sample_freq != 0:
+                continue
+            if nums is not None and i >= nums:
+                break
+            i += 1
             # print("round:{}, {}:{}".format(row[0], name, row[idx]))
             y_list_4.append(float(row[idx]))
 
@@ -248,15 +268,18 @@ def _draw_cmp(dataset, name="ACC", x_name="Rounds"):
     plt.savefig("{}/cmp/{}.png".format(IMG_PATH_PRE, output_filename))
     
 
-def draw_accuracy_cmp():
-    dataset = _get_cmp_list("ACC")
+def draw_accuracy_cmp(nums=None, sample_freq=1):
+    dataset = _get_cmp_list("ACC", nums)
     _draw_cmp(dataset, "ACC", "Rounds")
 
 
-def draw_loss_cmp():
-    dataset = _get_cmp_list("LOSS")
+def draw_loss_cmp(nums=None, sample_freq=1):
+    dataset = _get_cmp_list("LOSS", nums)
     _draw_cmp(dataset, "LOSS", "Rounds")
 
+def draw_train_loss_cmp(nums=None, sample_freq=1):
+    dataset = _get_cmp_list("TLOSS", nums, sample_freq)
+    _draw_cmp(dataset, "TLOSS", "Rounds")
 
 def draw_time_cmp():
     dataset = _get_cmp_list("T")
@@ -271,8 +294,23 @@ def draw_goal_cmp():
     dataset = _get_cmp_list("OBJ")
     _draw_cmp(dataset, "OBJ", "Rounds")
 
+def _draw_budget_related(metrics="T"):
+    if metrics == "T":
+        idx = 1
+        title = "Time"
+        y_label = "Time"
+    elif metrics == "TI":
+        idx = 2
+        title = "Training Intensity"
+        y_label = "Training Intensity"
+    elif metrics == "OBJ":
+        idx = 3
+        title = "Objective"
+        y_label = "Objective"
+    else:
+        print("WRONG BUDGET METRICS")
+        
 
-def draw_accuracy_budget(file_name=None):
     if file_name is None:
         file_name = in_filename
     budget_list = []
@@ -281,64 +319,30 @@ def draw_accuracy_budget(file_name=None):
     with open("{}/{}.csv".format(DATA_PATH_PRE, file_name), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
         for row in reader:
-            print("budget:{}, acc:{}".format(row[0], row[1]))
+            print("budget:{}, acc:{}".format(row[0], row[idx]))
             budget_list.append(int(row[0]))
-            acc_list.append(float(row[1]))
+            acc_list.append(float(row[idx]))
 
     plt.figure()
     plt.plot(budget_list, acc_list)
-    plt.title("Tested Accuracy")
-    plt.ylabel("Accuracy")
+    plt.title(title)
+    plt.ylabel(y_label)
     plt.xlabel("Budget")
-    plt.savefig("{}/{}-ACC.png".format(IMG_PATH_PRE, file_name))
+    plt.savefig("{}/{}-{}.png".format(IMG_PATH_PRE, file_name, metrics))
+
+def draw_accuracy_budget(file_name=None):
+    pass
     # plt.show()
 
 
 def draw_loss_budget(file_name=None):
-    if file_name is None:
-        file_name = in_filename
-    budget_list = []
-    loss_list = []
-    print("drawing:{}/{}.csv".format(DATA_PATH_PRE, file_name))
-    with open("{}/{}.csv".format(DATA_PATH_PRE, file_name), mode="r", encoding="utf-8-sig") as f:
-        reader = csv.reader(f)
-        for row in reader:
-            print("budget:{}, loss:{}".format(row[0], row[1]))
-            budget_list.append(int(row[0]))
-            loss_list.append(float(row[2]))
-
-    plt.figure()
-    plt.plot(budget_list, loss_list)
-    plt.title("Loss")
-    plt.ylabel("Loss")
-    plt.xlabel("Budget")
-    plt.savefig("{}/{}-LOSS.png".format(IMG_PATH_PRE, file_name))
-    # plt.show()
+    pass 
 
 
 def draw_time_budget(file_name=None):
-    if file_name is None:
-        file_name = in_filename
-    budget_list = []
-    loss_list = []
-    print("drawing:{}/{}.csv".format(DATA_PATH_PRE, file_name))
-    with open("{}/{}.csv".format(DATA_PATH_PRE, file_name), mode="r", encoding="utf-8-sig") as f:
-        reader = csv.reader(f)
-        for row in reader:
-            print("budget:{}, time:{}".format(row[0], row[1]))
-            budget_list.append(int(row[0]))
-            loss_list.append(float(row[3]))
+    _draw_budget_related("T")
 
-    print("budget_list:{}".format(budget_list))
-    plt.figure()
-    plt.plot(budget_list, loss_list)
-    plt.title("Time")
-    plt.ylabel("Time")
-    plt.xlabel("Budget")
-    plt.savefig("{}/{}-TIME.png".format(IMG_PATH_PRE, file_name))
-    # plt.show()
-
-def _get_time_list(name="ACC"):
+def _get_time_list(name="ACC", nums=None, sample_freq=1):
     if name == "ACC":
         idx = 1
     elif name == "LOSS":
@@ -358,7 +362,11 @@ def _get_time_list(name="ACC"):
 
     with open("{}/Fed3/{}.csv".format(DATA_PATH_PRE, filename_3), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
-        for row in reader:
+        for i, row in enumerate(reader):
+            if i % sample_freq != 0:
+                continue
+            if nums is not None and i >= nums:
+                break
             print("time:{}, {}:{}".format(row[3], name, row[idx]))
             if len(time_list_1) == 0:
                 time_list_1.append(float(row[3]))
@@ -368,7 +376,11 @@ def _get_time_list(name="ACC"):
 
     with open("{}/FedOpt/{}.csv".format(DATA_PATH_PRE, filename_opt), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
-        for row in reader:
+        for i, row in enumerate(reader):
+            if i % sample_freq != 0:
+                continue
+            if nums is not None and i >= nums:
+                break
             print("time:{}, {}:{}".format(row[3], name, row[idx]))
             if len(time_list_2) == 0:
                 time_list_2.append(float(row[3]))
@@ -378,7 +390,11 @@ def _get_time_list(name="ACC"):
 
     with open("{}/FedBF/{}.csv".format(DATA_PATH_PRE, filename_bf), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
-        for row in reader:
+        for i, row in enumerate(reader):
+            if i % sample_freq != 0:
+                continue
+            if nums is not None and i >= nums:
+                break
             print("time:{}, {}:{}".format(row[3], name, row[idx]))
             if len(time_list_3) == 0:
                 time_list_3.append(float(row[3]))
@@ -388,7 +404,11 @@ def _get_time_list(name="ACC"):
 
     with open("{}/FedAvg/{}.csv".format(DATA_PATH_PRE, filename_avg), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
-        for row in reader:
+        for i, row in enumerate(reader):
+            if i % sample_freq != 0:
+                continue
+            if nums is not None and i >= nums:
+                break
             print("time:{}, {}:{}".format(row[3], name, row[idx]))
             if len(time_list_4) == 0:
                 time_list_4.append(float(row[3]))
@@ -413,6 +433,9 @@ def _draw_time_list(name, time_data, val_data):
     elif name == "LOSS":
         title_name = "Tested Loss"
         y_label = "Loss"
+    elif name == "TLOSS":
+        title_name = "Train Loss"
+        y_label = "Loss"
     plt.title(title_name)
     plt.ylabel(y_label)
     plt.xlabel("Time")
@@ -420,62 +443,19 @@ def _draw_time_list(name, time_data, val_data):
     output_filename = "{}-T-{}".format(OUTPUT_FILENAME, name)
     plt.savefig("{}/cmp/{}.png".format(IMG_PATH_PRE, output_filename))  
 
-def draw_accuracy_cmp_with_time():
-    time_dataset, val_dataset = _get_time_list("ACC")
+def draw_accuracy_cmp_with_time(rounds=None, sample_freq=1):
+    time_dataset, val_dataset = _get_time_list("ACC", rounds, sample_freq)
     _draw_time_list("ACC", time_dataset, val_dataset)
     
 
-def draw_loss_cmp_with_time():
-    time_dataset, val_dataset = _get_time_list("LOSS")
+def draw_loss_cmp_with_time(rounds=None, sample_freq=1):
+    time_dataset, val_dataset = _get_time_list("LOSS", rounds, sample_freq)
     _draw_time_list("LOSS", time_dataset, val_dataset)
 
 
-def draw_time_cmp_with_budget():
-    budget_list = []
-
-    time_list_1 = []
-    time_list_2 = []
-    time_list_3 = []
-    time_list_4 = []
-
-    with open("{}/{}.csv".format(DATA_PATH_3, filename_3), mode="r", encoding="utf-8-sig") as f:
-        reader = csv.reader(f)
-        for row in reader:
-            print("budget:{}, acc:{}".format(row[0], row[3]))
-            budget_list.append(float(row[0]))
-            time_list_1.append(float(row[3]))
-
-    with open("{}/{}.csv".format(DATA_PATH_OPT, filename_opt), mode="r", encoding="utf-8-sig") as f:
-        reader = csv.reader(f)
-        for row in reader:
-            print("budget:{}, time:{}".format(row[0], row[3]))
-            time_list_2.append(float(row[3]))
-
-    with open("{}/{}.csv".format(DATA_PATH_BF, filename_bf), mode="r", encoding="utf-8-sig") as f:
-        reader = csv.reader(f)
-        for row in reader:
-            print("budget:{}, time:{}".format(row[0], row[3]))
-            time_list_3.append(float(row[3]))
-
-    with open("{}/fed_avg/{}.csv".format(DATA_PATH_PRE, filename_avg), mode="r", encoding="utf-8-sig") as f:
-        reader = csv.reader(f)
-        for row in reader:
-            print("budget:{}, time:{}".format(row[0], row[3]))
-            time_list_4.append(float(row[3]))
-
-    plt.figure()
-    plt.plot(budget_list, time_list_1)
-    plt.plot(budget_list, time_list_2)
-    plt.plot(budget_list, time_list_3)
-    plt.plot(budget_list, time_list_4)
-
-    plt.title("Tested Time")
-    plt.ylabel("Time")
-    plt.xlabel("Budget")
-    plt.legend(['ours', 'optimal', 'bid price first', 'FedAvg'])
-    output_filename = "B-T-{}".format(OUTPUT_FILENAME)
-    plt.savefig("{}/cmp/{}.png".format(IMG_PATH_PRE, output_filename))
-    # plt.show()
+def draw_train_loss_cmp_with_time(rounds=None, sample_freq=1):
+    time_dataset, val_dataset = _get_time_list("TLOSS", rounds, samp)
+    _draw_time_list("TLOSS", time_dataset, val_dataset)
 
 
 def draw_accuracy_cmp_with_budget():
@@ -526,50 +506,62 @@ def draw_accuracy_cmp_with_budget():
     plt.savefig("{}/cmp/{}.png".format(IMG_PATH_PRE, output_filename))
     # plt.show()
 
+def _get_prop_list(metrics = "T", sample_freq=1):
+    if metrics == "T":
+        idx = 1
+    elif metrics == "TI":
+        idx = 2
+    elif metrics == "OBJ":
+        idx = 3
+    else:
+        print("WRONG BUDGET METRICS")
+        return 
+    x_list = []
 
-def draw_goal_cmp_with_budget():
-    budget_list = []
+    list_1 = []
+    list_2 = []
+    list_3 = []
+    list_4 = []
 
-    time_list_1 = []
-    time_list_2 = []
-    time_list_3 = []
-    time_list_4 = []
-
-    with open("{}/{}.csv".format(DATA_PATH_3, filename_3), mode="r", encoding="utf-8-sig") as f:
+    with open("{}/Fed3/{}.csv".format(DATA_PATH_PRE, filename_3), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
-        for row in reader:
-            print("budget:{}, acc:{}".format(row[0], row[5]))
-            budget_list.append(float(row[0]))
-            time_list_1.append(float(row[5]))
+        for r_idx, row in enumerate(reader):
+            if r_idx % sample_freq == 0:
+                x_list.append(int(row[0]))
+                list_1.append(float(row[idx]))
 
-    with open("{}/{}.csv".format(DATA_PATH_OPT, filename_opt), mode="r", encoding="utf-8-sig") as f:
+    with open("{}/FedOpt/{}.csv".format(DATA_PATH_PRE, filename_opt), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
-        for row in reader:
-            print("budget:{}, time:{}".format(row[0], row[5]))
-            time_list_2.append(float(row[5]))
+        for r_idx, row in enumerate(reader):
+            if r_idx % sample_freq == 0:
+                list_2.append(float(row[idx]))
 
-    with open("{}/{}.csv".format(DATA_PATH_BF, filename_bf), mode="r", encoding="utf-8-sig") as f:
+    with open("{}/FedBF/{}.csv".format(DATA_PATH_PRE, filename_bf), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
-        for row in reader:
-            print("budget:{}, time:{}".format(row[0], row[5]))
-            time_list_3.append(float(row[5]))
+        for r_idx, row in enumerate(reader):
+            if r_idx % sample_freq == 0:
+                list_3.append(float(row[idx]))
 
-    with open("{}/fed_avg/{}.csv".format(DATA_PATH_PRE, filename_avg), mode="r", encoding="utf-8-sig") as f:
+    with open("{}/FedAvg/{}.csv".format(DATA_PATH_PRE, filename_avg), mode="r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
-        for row in reader:
-            print("budget:{}, time:{}".format(row[0], row[5]))
-            time_list_4.append(float(row[5]))
+        for r_idx, row in enumerate(reader):
+            if r_idx % sample_freq == 0:
+                list_4.append(float(row[idx]))
+    dataset = [x_list, list_1, list_2, list_3, list_4]
+    return dataset
 
-    plt.figure()
-    plt.plot(budget_list, time_list_1)
-    plt.plot(budget_list, time_list_2)
-    plt.plot(budget_list, time_list_3)
-    plt.plot(budget_list, time_list_4)
 
-    plt.title("Tested Objective")
-    plt.ylabel("Objective")
-    plt.xlabel("Budget")
-    plt.legend(['ours', 'optimal', 'bid price first', 'FedAvg'])
-    output_filename = "B-O-{}".format(OUTPUT_FILENAME)
-    plt.savefig("{}/cmp/{}.png".format(IMG_PATH_PRE, output_filename))
-    # plt.show()
+def draw_goal_cmp_with_x(x_name="Budget", sample_freq=1):
+    dataset = _get_prop_list("OBJ", sample_freq)
+    _draw_cmp(dataset=dataset, name="OBJ", x_name=x_name)
+
+
+def draw_time_cmp_with_x(x_name="Budget", sample_freq=1):
+    dataset = _get_prop_list("T", sample_freq)
+    _draw_cmp(dataset=dataset, name="T", x_name=x_name)
+
+
+def draw_training_intensity_cmp_with_x(x_name="Budget", sample_freq=1):
+    dataset = _get_prop_list("TI", sample_freq)
+    _draw_cmp(dataset=dataset, name="TI", x_name=x_name)
+

@@ -176,7 +176,7 @@ def test_individual_rationality(device, args, dataset, model_trainer):
         draw_individual_rationality(file_name)
 
 
-def test_with_rounds(dataset, args):
+def test_with_rounds(args, dataset):
     print("Run {} with {} rounds".format(args.fed_name, args.comm_round))
     fed_api = get_API(args=args, dataset=dataset)
     acc_list, loss_list, time_list, ti_sum_list, round_list, train_loss_list = fed_api.train()
@@ -202,55 +202,59 @@ def test_with_rounds(dataset, args):
         draw_time(file_name)
 
 
-def test_with_budget(dataset, device, args, model_trainer):
-    acc_list = []
-    loss_list = []
+def test_with_budget(args, dataset):
+    # acc_list = []
+    # loss_list = []
     time_list = []
     ti_sum_list = []
-    goal_list = []
+    obj_list = []
     budget_list = []
-    for budget in range(4, 80, 4):
+    for budget in range(10, 200, 5):
         args.budget_per_round = budget
-        fed3API = Fed3API(device=device, args=args,
-                          dataset=dataset, model_trainer=model_trainer)
-        t_acc_list, t_loss_list, t_time_list, t_ti_sum_list, _, train_loss_list = fed3API.train()
-        logging.info("client num in tot:{}".format(args.client_num_in_total))
+        logging.info("#########Budget:{}###########".format(budget))
+        fedAPI = get_API(args, dataset)
+        test_result = fedAPI.test_properties()
         # logging.info("t_ti_sum_list:{}".format(t_ti_sum_list))
-        t_goal_list = []
-        for idx, ti_val in enumerate(t_ti_sum_list):
-            if ti_val == 0:
-                t_goal_list.append(0)
-            else:
-                t_goal_list.append(float(ti_val) / float(t_time_list[idx]))
-        logging.info("budget:{}, time:{}".format(budget, t_time_list))
-        if len(t_acc_list) == 0:
-            acc_list.append(0)
-            loss_list.append(0)
-            time_list.append(0)
-            ti_sum_list.append(0)
-            goal_list.append(0)
-        else:
-            acc_list.append(np.mean(t_acc_list))
-            loss_list.append(np.mean(t_loss_list))
-            time_list.append(np.mean(t_time_list))
-            ti_sum_list.append(np.mean(t_ti_sum_list))
-            goal_list.append(np.mean(t_goal_list))
+        time_list.append(test_result.time)
+        ti_sum_list.append(test_result.training_intensity)
+        obj_list.append(test_result.objective)
         budget_list.append(budget)
 
-    data_table = [[b, acc, loss, t, ti_sum, goal, train_loss] for (b, acc, loss, t, ti_sum, goal, train_loss) in
-                  zip(budget_list, acc_list, loss_list, time_list, ti_sum_list, goal_list, train_loss_list)]
+    data_table = [[b, t, ti_sum, obj] for (b, t, ti_sum, obj) in
+                  zip(budget_list, time_list, ti_sum_list, obj_list)]
 
     # writing data to file
-    file_name = "{}-B".format(get_file_name(args))
+    file_name = "{}-C".format(get_file_name(args))
     print("writing {}".format(file_name))
     with open('{}/{}.csv'.format(DATA_PATH_PRE, file_name), mode="w", encoding="utf-8-sig", newline="") as f:
         writer = csv.writer(f)
         writer.writerows(data_table)
 
-    if args.draw:
-        draw_accuracy_budget(file_name)
-        draw_loss_budget(file_name)
-        draw_time_budget(file_name)
+def test_with_client_nums(args, dataset):
+    time_list = []
+    ti_sum_list = []
+    obj_list = []
+    client_nums_list = []
+    for client_nums in range(50, 500, 50):
+        args.client_num_in_total = client_nums
+        logging.info("#########client nums:{} ###########".format(client_nums))
+        fedAPI = get_API(args, dataset)
+        test_result = fedAPI.test_properties()
+        # logging.info("t_ti_sum_list:{}".format(t_ti_sum_list))
+        time_list.append(test_result.time)
+        ti_sum_list.append(test_result.training_intensity)
+        obj_list.append(test_result.objective)
+        client_nums_list.append(client_nums)
+
+    data_table = [[c, t, ti_sum, obj] for (c, t, ti_sum, obj) in
+                  zip(client_nums_list, time_list, ti_sum_list, obj_list)]
+
+    # writing data to file
+    file_name = "{}-C".format(get_file_name(args))
+    print("writing {}".format(file_name))
+    with open('{}/{}.csv'.format(DATA_PATH_PRE, file_name), mode="w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerows(data_table)
 
 
 if __name__ == "__main__":
@@ -298,7 +302,8 @@ if __name__ == "__main__":
 
     logging.info("before rounds")
     # Test Accuracy and Time
-    test_with_rounds(dataset, args)
+    # test_with_rounds(args, dataset)
     logging.info("done")
 
-    # test_with_budget(dataset, device, args, model_trainer)
+    # test_with_budget(args, dataset)
+    test_with_client_nums(args, dataset)

@@ -40,7 +40,7 @@ class FedAPI(object):
         for client_idx in range(self.args.client_num_in_total):
             optimizer = Optimizer(
                 args=self.args, data=self.train_data, indexs=self.user_data[client_idx])
-            c = Client(client_idx=client_idx, device = self.device, args=self.args, communication_time=0,
+            c = Client(client_idx=client_idx, device=self.device, args=self.args, communication_time=0,
                        computation_coefficient=0, cost=1, training_intensity=0,
                        local_training_data=self.user_data[client_idx],
                        local_sample_number=self.user_data_size[client_idx], optimizer=optimizer)
@@ -53,29 +53,50 @@ class FedAPI(object):
         pass
 
     def test_properties(self):
-        np.random.seed(self.args.seed)
+        obj_list = []
+        t_max_list = []
+        ti_list = []
 
-        # bids init
-        for client in self.client_list:
-            init_client_bid(client)
+        for round_idx in range(self.args.comm_round):
+            np.random.seed((self.args.seed*round_idx) % 10000000)
 
-        client_indexes, mn_cost, payment = self._get_winners()
-        logging.info('winners:{}'.format(client_indexes))
-        logging.info('payment:{}'.format(payment))
+            # bids init
+            for client in self.client_list:
+                init_client_bid(client)
 
-        tot_payment = 0
-        for idx, client_idx in enumerate(client_indexes):
-            client = self.client_list[int(client_idx)]
-            # distribute payment
-            client.receive_payment(payment[idx])
-            tot_payment += payment[idx]
+            client_indexes, payment = self._get_winners()
+            # logging.info('winners:{}'.format(client_indexes))
+            # logging.info('payment:{}'.format(payment))
 
-        t_idx = np.random.randint(0, len(client_indexes))
-        client = self.client_list[client_indexes[t_idx]]
-        real_cost = client.get_cost()
-        client_payment = client.get_payment()
+            tot_training_intensity = 0
+            tot_payment = 0
+            t_max = 0
 
-        return TestInfo(tot_payment=tot_payment, true_cost=real_cost, payment=client_payment)
+            for idx, client_idx in enumerate(client_indexes):
+                client = self.client_list[int(client_idx)]
+                # distribute payment
+                client.receive_payment(payment[idx])
+                tot_payment += payment[idx]
+                t_max = max(t_max, client.get_time())
+                tot_training_intensity += client.get_training_intensity()
+
+            t_max_list.append(t_max)
+            ti_list.append(tot_training_intensity)
+            obj_list.append(tot_training_intensity/t_max)
+
+            t_idx = np.random.randint(0, len(client_indexes))
+            client = self.client_list[client_indexes[t_idx]]
+            real_cost = client.get_cost()
+            client_payment = client.get_payment()
+
+        training_intensity_mean = np.mean(ti_list)
+        t_mean = np.mean(t_max_list)
+        obj_mean = np.mean(obj_list)
+
+        return TestInfo(tot_payment=tot_payment, true_cost=real_cost,
+                        payment=client_payment, time=t_mean,
+                        training_intensity=training_intensity_mean,
+                        objective=obj_mean)
 
     def train(self):
         train_loss = []
@@ -86,7 +107,7 @@ class FedAPI(object):
         round_list = []
 
         for round_idx in range(self.args.comm_round):
-            np.random.seed(self.args.seed * (round_idx+1))
+            np.random.seed((self.args.seed * (round_idx+1)) % 10000000)
             logging.info(
                 "#############Communication round : {}".format(round_idx))
             t_max, ti_sum, loss_sum = 0, 0, 0
@@ -99,7 +120,6 @@ class FedAPI(object):
             client_indexes, payment = self._get_winners()
 
             logging.info("select {} clients".format(len(client_indexes)))
-
 
             # train on winners
             for idx, client_idx in enumerate(client_indexes):
@@ -118,10 +138,11 @@ class FedAPI(object):
                 loss_sum += loss
 
                 # debug
-                print("client: {}, tau: {}".format(client_idx, client.get_training_intensity()))
+                print("client: {}, tau: {}".format(
+                    client_idx, client.get_training_intensity()))
 
-            #debug
-            #print("")
+            # debug
+            # print("")
 
             # update global weights
             global_w = w_locals[0]
