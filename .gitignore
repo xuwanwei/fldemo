@@ -3,3 +3,4 @@ results/*
 __pycache__
 wandb/*
 OutputImage/*
+fed_exp/wandb/*
