@@ -13,6 +13,7 @@ from torchvision import datasets, transforms
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../")))
 from utils.args_parser import add_args
+from fed_api.utils.utils_func import get_objective
 from fed_api.utils.draw import *
 from fed_api.fedavg_api import FedAvgAPI
 from fed_api.fedbf_api import FedBFAPI
@@ -74,30 +75,18 @@ def get_API(args, dataset):
 
 
 def get_file_name(args):
-    timestamp = time.time()
-    datatime = time.strftime("%Y-%m-%d-%H-%M", time.localtime(timestamp))
-    if args.fed_name == "Fed3":
-        file_name = 'Fed3/fed3-{}-{}'.format(args.seed, datatime)
-    elif args.fed_name == "FedAvg":
-        file_name = 'FedAvg/fedavg-{}-{}'.format(args.seed, datatime)
-    elif args.fed_name == "FedOpt":
-        file_name = 'FedOpt/fedopt-{}-{}'.format(args.seed, datatime)
-    elif args.fed_name == "FedBF":
-        file_name = 'FedBF/fedbf-{}-{}'.format(args.seed, datatime)
-    else:
-        sys.exit(0)
+    file_name = '{}/{}-{}-{}-C{}-B{}-R{}-S{}-lr{}-al{}'.format(args.fed_name, args.fed_name, args.model, args.dataset, args.client_num_in_total, args.budget_per_round, args.comm_round, args.seed, args.lr, args.alpha)
     return file_name
 
 
-def test_truthfulness(device, args, dataset):
+def test_truthfulness(args, dataset):
     truth_ratio_list = []
     utility_list = []
     logging.info("####################Truthfulness#####################")
     for truth_ratio in np.arange(0.2, 2, 0.2):
         fed_api = get_API(args=args, dataset=dataset)
         logging.info("Ratio:" + str(truth_ratio))
-        client_utility, client_bidding_price = fed_api.train_for_truthfulness(
-            truth_ratio=truth_ratio)
+        client_utility, _ = fed_api.train_for_truthfulness(truth_ratio=truth_ratio)
         truth_ratio_list.append(truth_ratio)
         utility_list.append(client_utility)
 
@@ -118,19 +107,19 @@ def test_truthfulness(device, args, dataset):
     with open('{}/{}.csv'.format(DATA_PATH_PRE, file_name), mode="w", encoding="utf-8-sig", newline="") as f:
         writer = csv.writer(f)
         writer.writerows(truth_data)
-    if args.draw:
-        draw_IC(file_name)
+    draw_IC(file_name)
 
 
-def test_budget_balance_with_client_num(device, args, dataset):
+def test_budget_balance_with_client_num(args, dataset):
     tot_payment_list = []
     client_num_list = []
     budget_list = []
     logging.info("####################Budget Balance#####################")
-    for client_num in np.arange(10, 100, 10):
+    for client_num in np.arange(20, 220, 20):
+        logging.info("client num:{}".format(client_num))
         args.client_num_in_total = client_num
         fed_api = get_API(args=args, dataset=dataset)
-        res = fed_api.test_properties()
+        res = fed_api.test_properties("BB")
         tot_payment_list.append(res.tot_payment)
         budget_list.append(args.budget_per_round)
         client_num_list.append(client_num)
@@ -145,35 +134,25 @@ def test_budget_balance_with_client_num(device, args, dataset):
         writer = csv.writer(f)
         writer.writerows(truth_data)
 
-    if args.draw:
-        draw_budget_balance(file_name)
+    draw_budget_balance(file_name)
 
 
-def test_individual_rationality(device, args, dataset, model_trainer):
-    payment_list = []
-    true_cost_list = []
-    client_num_list = []
+def test_individual_rationality(args, dataset):
     logging.info("####################IR#####################")
-    for client_num in np.arange(10, 100, 10):
-        args.client_num_in_total = client_num
-        fed_api = get_API(args=args, dataset=dataset)
-        res = fed_api.test_properties()
-        payment_list.append(res.payment)
-        true_cost_list.append(res.true_cost)
-        client_num_list.append(client_num)
-
+    fed_api = get_API(args=args, dataset=dataset)
+    res = fed_api.test_properties("IR")
     logging.info("####################End##############################")
-    truth_data = [[x, y, z] for (x, y, z) in zip(
-        client_num_list, true_cost_list, payment_list)]
+    
+    client_list = np.arange(1, len(res.true_cost)+1)
+    truth_data = [[x, y, z] for (x, y, z) in zip(client_list, res.true_cost, res.payment)]
 
-    file_name = "{}-IC".format(get_file_name(args))
+    file_name = "{}-IR".format(get_file_name(args))
     print("writing {}".format(file_name))
     with open('{}/{}.csv'.format(DATA_PATH_PRE, file_name), mode="w", encoding="utf-8-sig", newline="") as f:
         writer = csv.writer(f)
         writer.writerows(truth_data)
 
-    if args.draw:
-        draw_individual_rationality(file_name)
+    draw_individual_rationality(file_name)
 
 
 def test_with_rounds(args, dataset):
@@ -185,7 +164,7 @@ def test_with_rounds(args, dataset):
         if ti_val == 0:
             goal_list.append(0)
         else:
-            goal_list.append(float(ti_val) / float(time_list[idx]))
+            goal_list.append(get_objective(ti_val, time_list[idx], args.alpha))
 
     data_table = [[r, acc, loss, t, ti_sum, goal, train_loss] for (r, acc, loss, t, ti_sum, goal, train_loss) in
                   zip(round_list, acc_list, loss_list, time_list, ti_sum_list, goal_list, train_loss_list)]
@@ -196,12 +175,8 @@ def test_with_rounds(args, dataset):
         writer = csv.writer(f)
         writer.writerows(data_table)
 
-    if args.draw:
-        draw_accuracy(file_name)
-        draw_loss(file_name)
-        draw_time(file_name)
 
-
+'''value-budget'''
 def test_with_budget(args, dataset):
     # acc_list = []
     # loss_list = []
@@ -209,7 +184,10 @@ def test_with_budget(args, dataset):
     ti_sum_list = []
     obj_list = []
     budget_list = []
-    for budget in range(10, 200, 5):
+    left = 10
+    right = 100
+    step = 2
+    for budget in range(left, right, step):
         args.budget_per_round = budget
         logging.info("#########Budget:{}###########".format(budget))
         fedAPI = get_API(args, dataset)
@@ -224,20 +202,21 @@ def test_with_budget(args, dataset):
                   zip(budget_list, time_list, ti_sum_list, obj_list)]
 
     # writing data to file
-    file_name = "{}-C".format(get_file_name(args))
+    file_name = "{}/C{}-B-{}-l{}-r{}-s{}".format(args.fed_name, args.client_num_in_total, args.fed_name, left, right, step)
     print("writing {}".format(file_name))
     with open('{}/{}.csv'.format(DATA_PATH_PRE, file_name), mode="w", encoding="utf-8-sig", newline="") as f:
         writer = csv.writer(f)
         writer.writerows(data_table)
 
+'''value-client nums'''
 def test_with_client_nums(args, dataset):
     time_list = []
     ti_sum_list = []
     obj_list = []
     client_nums_list = []
-    for client_nums in range(50, 500, 50):
+    for client_nums in range(50, 500, 10):
         args.client_num_in_total = client_nums
-        logging.info("#########client nums:{} ###########".format(client_nums))
+        logging.info("#########client   nums:{} ###########".format(client_nums))
         fedAPI = get_API(args, dataset)
         test_result = fedAPI.test_properties()
         # logging.info("t_ti_sum_list:{}".format(t_ti_sum_list))
@@ -264,6 +243,7 @@ if __name__ == "__main__":
 
     parser = add_args(argparse.ArgumentParser(description='fed-standalone'))
     args = parser.parse_args()
+    # args.file_name = args.dataset + "-" + args.model + "-C" + args.client_num_in_total +"-B" + args.budget_per_round + "-lr" +args.learning_rate + "-S" +args.seed+args.fed_name
     logger.info(args)
     args.device = torch.device('cuda:{}'.format(args.gpu) if torch.cuda.is_available() and args.gpu != -1 else 'cpu')
     
@@ -288,22 +268,17 @@ if __name__ == "__main__":
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-    logging.info("after torch")
     # load data
     dataset = load_data(args.dataset)
 
-    logging.info("after data")
-
     # Test economic properties
-    # test_truthfulness(device, args, dataset, model_trainer)
-    # test_budget_balance_with_client_num(device, args, dataset, model_trainer)
-    # test_individual_rationality(device, args, dataset, model_trainer)
-    # test_with_budget(device, args)
+    # test_truthfulness(args, dataset)
+    # test_individual_rationality(args, dataset)
+    # test_budget_balance_with_client_num(args, dataset)
+    # test_with_budget(args)
 
-    logging.info("before rounds")
     # Test Accuracy and Time
-    # test_with_rounds(args, dataset)
-    logging.info("done")
+    test_with_rounds(args, dataset)
 
     # test_with_budget(args, dataset)
-    test_with_client_nums(args, dataset)
+    # test_with_client_nums(args, dataset)

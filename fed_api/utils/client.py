@@ -64,3 +64,4 @@ class Client:
 
     def get_payment(self):
         return self.payment
+        

@@ -28,12 +28,12 @@ class FedBFAPI(FedAPI):
         candidates.sort(key=cmp)
         sum_payment = 0
 
-        t_max = 0
+        # t_max = 0
         for bid in candidates:
             if sum_payment + bid.get_bidding_price() > self.args.budget_per_round:
                 break
             sum_payment += bid.get_bidding_price()
             winners.append(bid.client_idx)
             payment.append(bid.get_bidding_price())
-            t_max = max(t_max, bid.get_time())
+            # t_max = max(t_max, bid.get_time())
         return winners, payment

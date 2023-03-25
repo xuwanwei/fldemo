@@ -52,26 +52,37 @@ class FedAPI(object):
     def _get_winners(self):
         pass
 
-    def test_properties(self):
+    def test_properties(self, type="IR"):
         obj_list = []
         t_max_list = []
         ti_list = []
+        payment_list = []
+        cost_list = []
 
+        test_payment = 0
+        dif_payment_budget = -1
         for round_idx in range(self.args.comm_round):
-            np.random.seed((self.args.seed*round_idx) % 10000000)
+            logging.info("round:{}".format(round_idx))
+            np.random.seed((self.args.seed*round_idx) % 1000000007)
 
             # bids init
             for client in self.client_list:
                 init_client_bid(client)
+            for idx, client in enumerate(self.client_list):
+                logging.info("round:{}, client:{}, cost:{}, ti:{}".format(round_idx, client.client_idx, client.get_cost(), client.get_training_intensity()))
+                if idx >= 10:
+                    break
 
             client_indexes, payment = self._get_winners()
-            # logging.info('winners:{}'.format(client_indexes))
-            # logging.info('payment:{}'.format(payment))
+            logging.info('winners:{}'.format(client_indexes))
+            logging.info('payment:{}'.format(payment))
 
             tot_training_intensity = 0
             tot_payment = 0
             t_max = 0
 
+            payment_list = payment
+            cost_per_round = []
             for idx, client_idx in enumerate(client_indexes):
                 client = self.client_list[int(client_idx)]
                 # distribute payment
@@ -79,22 +90,31 @@ class FedAPI(object):
                 tot_payment += payment[idx]
                 t_max = max(t_max, client.get_time())
                 tot_training_intensity += client.get_training_intensity()
+                cost_per_round.append(client.get_cost())
+            cost_list = cost_per_round
+            logging.info("tot payment:{}".format(tot_payment))
 
             t_max_list.append(t_max)
             ti_list.append(tot_training_intensity)
-            obj_list.append(tot_training_intensity/t_max)
+            # obj_list.append(tot_training_intensity/t_max)
+            obj_list.append(get_objective(tot_training_intensity, t_max, self.args.alpha))
 
             t_idx = np.random.randint(0, len(client_indexes))
             client = self.client_list[client_indexes[t_idx]]
-            real_cost = client.get_cost()
-            client_payment = client.get_payment()
+
+            if type == "IR":
+                break
+
+            if self.args.budget_per_round - tot_payment > dif_payment_budget:
+                dif_payment_budget = self.args.budget_per_round - tot_payment
+                test_payment = tot_payment
 
         training_intensity_mean = np.mean(ti_list)
         t_mean = np.mean(t_max_list)
         obj_mean = np.mean(obj_list)
 
-        return TestInfo(tot_payment=tot_payment, true_cost=real_cost,
-                        payment=client_payment, time=t_mean,
+        return TestInfo(tot_payment=test_payment, true_cost=cost_list,
+                        payment=payment_list, time=t_mean,
                         training_intensity=training_intensity_mean,
                         objective=obj_mean)
 

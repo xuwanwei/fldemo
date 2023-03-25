@@ -48,7 +48,8 @@ class Fed3API(FedAPI):
                 temp_winners_utility_2 = get_total_training_intensity(temp_winners_list)
                 temp_payment = self._get_payment(temp_winners, critical_client)
 
-            temp_winners_utility = (1.0/3.0 * temp_winners_utility_1 + 2.0/3.0*temp_winners_utility_2)/t_max
+            # temp_winners_utility = (1.0/3.0 * temp_winners_utility_1 + 2.0/3.0*temp_winners_utility_2)/t_max
+            temp_winners_utility = (1.0/3.0 * temp_winners_utility_1 + 2.0/3.0*temp_winners_utility_2)/(t_max**self.args.alpha)
 
             if temp_winners_utility > mx_utility:
                 winners = temp_winners

@@ -68,4 +68,19 @@ def add_args(parser):
 
     parser.add_argument('--momentum', type = float, default = 0.5, help = "SGD momentum (default: 0.5)")
 
+    parser.add_argument('--alpha', type=int, default=1, help='time**alpha')
+
+    return parser
+
+def add_args_for_drawing(parser):
+    parser.add_argument('--type', type=str, help='acc/loss/budget/client_nums')
+    parser.add_argument('--frequency', type=int, default=1, help='sample frequency')
+    parser.add_argument('--xlabel', type=str, default="undefined", help='Budget/Total numbers of clients')
+    parser.add_argument('--filepath_cmp', action='append', help='including path, ex:Fed3/fed3_data')
+    # parser.add_argument('--filename_opt',type=str, default="")
+    # parser.add_argument('--filename_bf',type=str, default="")
+    # parser.add_argument('--filename_avg',type=str, default="")
+    # parser.add_argument('--filename3_same', action='append')
+    parser.add_argument('--legend', nargs='*')
+    
     return parser

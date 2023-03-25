@@ -1,0 +1,22 @@
+2023-03-14 10:51:33,585 INFO    MainThread:39253 [wandb_setup.py:_flush():68] Configure stats pid to 39253
+2023-03-14 10:51:33,585 INFO    MainThread:39253 [wandb_setup.py:_flush():68] Loading settings from /home/public/.config/wandb/settings
+2023-03-14 10:51:33,585 INFO    MainThread:39253 [wandb_setup.py:_flush():68] Loading settings from /home/public/xww/Exp/fldemo/fed_exp/wandb/settings
+2023-03-14 10:51:33,585 INFO    MainThread:39253 [wandb_setup.py:_flush():68] Loading settings from environment variables: {'_require_service': 'True'}
+2023-03-14 10:51:33,585 INFO    MainThread:39253 [wandb_setup.py:_flush():68] Inferring run settings from compute environment: {'program_relpath': 'fed_exp/main_fed.py', 'program': './main_fed.py'}
+2023-03-14 10:51:33,585 INFO    MainThread:39253 [wandb_init.py:_log_setup():476] Logging user logs to /home/public/xww/Exp/fldemo/fed_exp/wandb/offline-run-20230314_105133-9xof60pw/logs/debug.log
+2023-03-14 10:51:33,585 INFO    MainThread:39253 [wandb_init.py:_log_setup():477] Logging internal logs to /home/public/xww/Exp/fldemo/fed_exp/wandb/offline-run-20230314_105133-9xof60pw/logs/debug-internal.log
+2023-03-14 10:51:33,585 INFO    MainThread:39253 [wandb_init.py:init():516] calling init triggers
+2023-03-14 10:51:33,585 INFO    MainThread:39253 [wandb_init.py:init():520] wandb.init called with sweep_config: {}
+config: {'model': 'cnn', 'dataset': 'cifar-10', 'client_num_in_total': 200, 'local_bs': 128, 'lr': 0.01, 'comm_round': 10, 'frequency_of_the_test': 1, 'gpu': 0, 'budget_per_round': 100.0, 'seed': 20220924, 'draw': True, 'fed_name': 'FedAvg', 'iid': True, 'uniform': True, 'momentum': 0.5, 'device': device(type='cuda', index=0)}
+2023-03-14 10:51:33,586 INFO    MainThread:39253 [wandb_init.py:init():569] starting backend
+2023-03-14 10:51:33,586 INFO    MainThread:39253 [wandb_init.py:init():573] setting up manager
+2023-03-14 10:51:33,588 INFO    MainThread:39253 [backend.py:_multiprocessing_setup():104] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2023-03-14 10:51:33,590 INFO    MainThread:39253 [wandb_init.py:init():580] backend started and connected
+2023-03-14 10:51:33,598 INFO    MainThread:39253 [wandb_init.py:init():658] updated telemetry
+2023-03-14 10:51:33,616 INFO    MainThread:39253 [wandb_init.py:init():728] starting run threads in backend
+2023-03-14 10:51:35,383 INFO    MainThread:39253 [wandb_run.py:_console_start():1980] atexit reg
+2023-03-14 10:51:35,384 INFO    MainThread:39253 [wandb_run.py:_redirect():1838] redirect: SettingsConsole.WRAP_RAW
+2023-03-14 10:51:35,385 INFO    MainThread:39253 [wandb_run.py:_redirect():1903] Wrapping output streams.
+2023-03-14 10:51:35,385 INFO    MainThread:39253 [wandb_run.py:_redirect():1925] Redirects installed.
+2023-03-14 10:51:35,386 INFO    MainThread:39253 [wandb_init.py:init():765] run started, returning control to user process
+2023-03-14 10:51:40,382 WARNING MsgRouterThr:39253 [router.py:message_loop():77] message_loop has been closed

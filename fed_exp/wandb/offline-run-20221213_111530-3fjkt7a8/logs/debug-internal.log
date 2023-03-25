@@ -26,3 +26,5 @@
 2022-12-13 11:15:32,940 DEBUG   HandlerThread:2074 [system_info.py:_save_conda():86] Saving conda packages done
 2022-12-13 11:15:32,942 INFO    HandlerThread:2074 [system_monitor.py:probe():183] Finished publishing system info
 2022-12-13 11:16:30,994 DEBUG   SystemMonitor:2074 [system_monitor.py:_start():130] Starting system metrics aggregation loop
+2022-12-14 01:17:12,930 INFO    MainThread:2074 [internal.py:handle_exit():78] Internal process exited
+2022-12-14 01:17:12,932 WARNING MsgRouterThr:2074 [router.py:message_loop():74] EOFError seen in message_loop
