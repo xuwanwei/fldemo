@@ -75,7 +75,7 @@ def get_API(args, dataset):
 
 
 def get_file_name(args):
-    file_name = '{}/{}-{}-{}-C{}-B{}-R{}-S{}-lr{}-al{}'.format(args.fed_name, args.fed_name, args.model, args.dataset, args.client_num_in_total, args.budget_per_round, args.comm_round, args.seed, args.lr, args.alpha)
+    file_name = '{}/{}-{}-{}-C{}-B{}-R{}-S{}-lr{}-al{}-mc{}'.format(args.fed_name, args.fed_name, args.model, args.dataset, args.client_num_in_total, args.budget_per_round, args.comm_round, args.seed, args.lr, args.alpha, args.max_client_num)
     return file_name
 
 
@@ -186,7 +186,7 @@ def test_with_budget(args, dataset):
     budget_list = []
     left = 10
     right = 100
-    step = 2
+    step = 10
     for budget in range(left, right, step):
         args.budget_per_round = budget
         logging.info("#########Budget:{}###########".format(budget))

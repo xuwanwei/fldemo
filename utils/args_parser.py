@@ -38,6 +38,9 @@ def add_args(parser):
 
     parser.add_argument('--client_num_in_total', type=int, default=100, metavar='NN',
                         help='number of workers in a distributed cluster')
+    
+    parser.add_argument('--max_client_num', type=int, default=100, metavar='NN',
+                        help='number of workers to split the data')
 
     parser.add_argument('--local_bs', type = int, default = 128, help = "local batch size: bs")
 

@@ -28,7 +28,7 @@ class FedAPI(object):
         self.global_net = global_net
         # TODO: dataset args
         self.user_data, self.user_data_size = split_data(
-            self.train_data, args.client_num_in_total, args.dataset, args.iid, args.uniform)
+            self.train_data, args.max_client_num, args.dataset, args.iid, args.uniform)
         logging.info("running:{}".format(self.args.fed_name))
 
         self._setup_clients()
@@ -92,7 +92,7 @@ class FedAPI(object):
                 tot_training_intensity += client.get_training_intensity()
                 cost_per_round.append(client.get_cost())
             cost_list = cost_per_round
-            logging.info("tot payment:{}".format(tot_payment))
+            # logging.info("tot payment:{}".format(tot_payment))
 
             t_max_list.append(t_max)
             ti_list.append(tot_training_intensity)
@@ -140,6 +140,7 @@ class FedAPI(object):
             client_indexes, payment = self._get_winners()
 
             logging.info("select {} clients".format(len(client_indexes)))
+            logging.info("clients:{}".format(client_indexes))
 
             # train on winners
             for idx, client_idx in enumerate(client_indexes):
@@ -158,8 +159,8 @@ class FedAPI(object):
                 loss_sum += loss
 
                 # debug
-                print("client: {}, tau: {}".format(
-                    client_idx, client.get_training_intensity()))
+                # print("client: {}, time: {}".format(
+                #     client_idx, client.get_time()))
 
             # debug
             # print("")

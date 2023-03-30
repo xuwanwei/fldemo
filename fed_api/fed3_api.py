@@ -30,26 +30,33 @@ class Fed3API(FedAPI):
             # logging.info("time:{}, prob:{}".format(self.t_max, prob))
             temp_winners_utility_1 = 0
             temp_winners_utility_2 = 0
-            if prob <= 1.0 / 3.0:
-                winner = 0
-                mx_v = 0
-                for client_i in self.client_list:
-                    if client_i.get_time() > self.t_max:
-                        continue
-                    if client_i.get_training_intensity() > mx_v:
-                        mx_v = client_i.get_training_intensity()
-                        winner = client_i.client_idx
-                        temp_winners_utility_1 = 1.0 * client_i.get_training_intensity()
-                temp_winners = [winner]
-                temp_payment = [self.args.budget_per_round]
-            else:
-                temp_winners, critical_client = self._winners_determination()
-                temp_winners_list = get_client_list(temp_winners, self.client_list)
-                temp_winners_utility_2 = get_total_training_intensity(temp_winners_list)
-                temp_payment = self._get_payment(temp_winners, critical_client)
+            temp_winners_1 = []
+            temp_winners_2 = []
+            # if prob <= 1.0 / 3.0:
+            winner = 0
+            mx_v = 0
+            for client_i in self.client_list:
+                if client_i.get_time() > self.t_max:
+                    continue
+                if client_i.get_training_intensity() > mx_v:
+                    mx_v = client_i.get_training_intensity()
+                    winner = client_i.client_idx
+                    temp_winners_utility_1 = 1.0 * client_i.get_training_intensity()
+            temp_winners_1 = [winner]
+            # else:
+            temp_winners_2, critical_client = self._winners_determination()
+            temp_winners_list = get_client_list(temp_winners_2, self.client_list)
+            temp_winners_utility_2 = get_total_training_intensity(temp_winners_list)
 
             # temp_winners_utility = (1.0/3.0 * temp_winners_utility_1 + 2.0/3.0*temp_winners_utility_2)/t_max
             temp_winners_utility = (1.0/3.0 * temp_winners_utility_1 + 2.0/3.0*temp_winners_utility_2)/(t_max**self.args.alpha)
+
+            if prob <= 1.0 / 3.0:
+                temp_winners = temp_winners_1
+                temp_payment = [self.args.budget_per_round]
+            else:
+                temp_winners = temp_winners_2
+                temp_payment = self._get_payment(temp_winners_2, critical_client)
 
             if temp_winners_utility > mx_utility:
                 winners = temp_winners
